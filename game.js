@@ -183,6 +183,26 @@ class Player {
 
         this.keys = {};
         this.setupControls();
+        
+        // カメラの初期位置を設定
+        this.updateCamera();
+    }
+    
+    updateCamera() {
+        const cameraDistance = 8;
+        const cameraHeight = 3;
+        const cameraAngle = this.rotation;
+        
+        camera.position.x = this.position.x - Math.sin(cameraAngle) * cameraDistance;
+        camera.position.y = this.position.y + cameraHeight;
+        camera.position.z = this.position.z - Math.cos(cameraAngle) * cameraDistance;
+        
+        const lookAtDistance = 5;
+        camera.lookAt(
+            this.position.x + Math.sin(cameraAngle) * lookAtDistance,
+            this.position.y + 1,
+            this.position.z + Math.cos(cameraAngle) * lookAtDistance
+        );
     }
 
     setupControls() {
@@ -319,21 +339,7 @@ class Player {
         this.group.rotation.y = this.rotation;
 
         // カメラ位置更新（プレイヤーの背後から追尾）
-        const cameraDistance = 8;
-        const cameraHeight = 3;
-        const cameraAngle = this.rotation; // プレイヤーの向きに合わせる
-        
-        camera.position.x = this.position.x - Math.sin(cameraAngle) * cameraDistance;
-        camera.position.y = this.position.y + cameraHeight;
-        camera.position.z = this.position.z - Math.cos(cameraAngle) * cameraDistance;
-        
-        // プレイヤーの少し前方を見る
-        const lookAtDistance = 5;
-        camera.lookAt(
-            this.position.x + Math.sin(cameraAngle) * lookAtDistance,
-            this.position.y + 1,
-            this.position.z + Math.cos(cameraAngle) * lookAtDistance
-        );
+        this.updateCamera();
 
         // 敵へのダメージチェック（大きい武器で範囲が広がった）
         if (this.isAttacking && monster) {

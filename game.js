@@ -2,8 +2,24 @@
 // モンスターハンター 3Dゲーム - メインスクリプト
 // ========================================
 
-console.log('Game script loaded');
-console.log('THREE.js version:', THREE.REVISION);
+const debugInfo = [];
+function addDebug(msg) {
+    debugInfo.push(msg);
+    console.log(msg);
+    const debugEl = document.getElementById('debugContent');
+    if (debugEl) {
+        debugEl.innerHTML = debugInfo.map((m, i) => `${i + 1}. ${m}`).join('<br>');
+    }
+}
+
+addDebug('Game script loaded');
+
+// Three.js の確認
+if (typeof THREE === 'undefined') {
+    addDebug('❌ THREE.js が読み込まれていません！');
+} else {
+    addDebug('✅ THREE.js version: ' + THREE.REVISION);
+}
 
 // Three.js シーン設定
 const scene = new THREE.Scene();
@@ -19,7 +35,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-console.log('Scene, camera, renderer created');
+addDebug('✅ Scene, camera, renderer created');
 
 // ========================================
 // ライティング
@@ -655,14 +671,16 @@ class GameManager {
 // ========================================
 // メインゲームループ
 // ========================================
-console.log('Creating game manager...');
+addDebug('Creating game manager...');
 const gameManager = new GameManager();
-console.log('Game manager created');
-console.log('Player position:', gameManager.player.position);
-console.log('Monster position:', gameManager.monster.position);
-console.log('Scene children count:', scene.children.length);
+addDebug('✅ Game manager created');
+addDebug('Player position: (' + gameManager.player.position.x + ', ' + gameManager.player.position.z + ')');
+addDebug('Monster position: (' + gameManager.monster.position.x + ', ' + gameManager.monster.position.z + ')');
+addDebug('Scene children count: ' + scene.children.length);
+addDebug('Camera position: (' + camera.position.x + ', ' + camera.position.y + ', ' + camera.position.z + ')');
 
 let lastTime = Date.now();
+let frameCount = 0;
 
 function animate() {
     requestAnimationFrame(animate);
@@ -673,9 +691,19 @@ function animate() {
 
     gameManager.update(deltaTime);
     renderer.render(scene, camera);
+    
+    frameCount++;
+    if (frameCount === 10) {
+        addDebug('✅ Animation running (frame ' + frameCount + ')');
+        // 3秒後にデバッグ情報を隠す
+        setTimeout(() => {
+            const debugEl = document.getElementById('debugInfo');
+            if (debugEl) debugEl.style.display = 'none';
+        }, 3000);
+    }
 }
 
-console.log('Starting animation loop...');
+addDebug('Starting animation loop...');
 animate();
 
 // リサイズ対応
@@ -685,4 +713,4 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-console.log('Game initialized successfully!');
+addDebug('✅ Game initialized successfully!');

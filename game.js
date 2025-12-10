@@ -278,8 +278,10 @@ class Player {
             }
         } else {
             // 通常移動
-            this.position.x += this.velocity.x * Math.cos(this.rotation) - this.velocity.z * Math.sin(this.rotation);
-            this.position.z += this.velocity.x * Math.sin(this.rotation) + this.velocity.z * Math.cos(this.rotation);
+            const moveX = this.velocity.x * Math.cos(this.rotation) - this.velocity.z * Math.sin(this.rotation);
+            const moveZ = this.velocity.x * Math.sin(this.rotation) + this.velocity.z * Math.cos(this.rotation);
+            this.position.x += moveX;
+            this.position.z += moveZ;
         }
 
         // マップ境界
@@ -313,11 +315,8 @@ class Player {
         }
 
         // グループ位置更新
-        this.group.position.copy({
-            x: this.position.x,
-            y: 0,
-            z: this.position.z
-        });
+        this.group.position.set(this.position.x, 0, this.position.z);
+        this.group.rotation.y = this.rotation;
 
         // カメラ位置更新
         const cameraDistance = 8;

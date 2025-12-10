@@ -8,6 +8,9 @@ scene.background = new THREE.Color(0xa0d8f1);
 scene.fog = new THREE.Fog(0xa0d8f1, 300, 800);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+camera.position.set(0, 5, 10);
+camera.lookAt(0, 0, 0);
+
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('canvas') });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;

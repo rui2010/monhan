@@ -145,11 +145,11 @@ class Player {
         this.body.receiveShadow = true;
         this.group.add(this.body);
 
-        // 武器（剣）
-        const weaponGeometry = new THREE.BoxGeometry(0.3, 1.5, 0.1);
+        // 武器（剣）- 大きいサイズ
+        const weaponGeometry = new THREE.BoxGeometry(0.6, 3.5, 0.2);
         const weaponMaterial = new THREE.MeshPhongMaterial({ color: 0xcccccc });
         this.weapon = new THREE.Mesh(weaponGeometry, weaponMaterial);
-        this.weapon.position.set(0.5, 1, 0.3);
+        this.weapon.position.set(0.8, 1.5, 0.5);
         this.weapon.rotation.z = Math.PI / 6;
         this.weapon.castShadow = true;
         this.group.add(this.weapon);
@@ -318,23 +318,28 @@ class Player {
         this.group.position.set(this.position.x, 0, this.position.z);
         this.group.rotation.y = this.rotation;
 
-        // カメラ位置更新
+        // カメラ位置更新（プレイヤーの背後から追尾）
         const cameraDistance = 8;
-        const cameraHeight = 5;
-        camera.position.x = this.position.x + Math.cos(this.rotation + Math.PI) * cameraDistance;
-        camera.position.y = cameraHeight;
-        camera.position.z = this.position.z + Math.sin(this.rotation + Math.PI) * cameraDistance;
+        const cameraHeight = 3;
+        const cameraAngle = this.rotation; // プレイヤーの向きに合わせる
+        
+        camera.position.x = this.position.x - Math.sin(cameraAngle) * cameraDistance;
+        camera.position.y = this.position.y + cameraHeight;
+        camera.position.z = this.position.z - Math.cos(cameraAngle) * cameraDistance;
+        
+        // プレイヤーの少し前方を見る
+        const lookAtDistance = 5;
         camera.lookAt(
-            this.position.x,
-            1,
-            this.position.z
+            this.position.x + Math.sin(cameraAngle) * lookAtDistance,
+            this.position.y + 1,
+            this.position.z + Math.cos(cameraAngle) * lookAtDistance
         );
 
-        // 敵へのダメージチェック
+        // 敵へのダメージチェック（大きい武器で範囲が広がった）
         if (this.isAttacking && monster) {
             const dist = this.distanceTo(monster.position.x, monster.position.z);
-            if (dist < 3 && this.attackTime > this.attackDuration * 0.4 && this.attackTime < this.attackDuration * 0.7) {
-                monster.takeDamage(15);
+            if (dist < 5 && this.attackTime > this.attackDuration * 0.4 && this.attackTime < this.attackDuration * 0.7) {
+                monster.takeDamage(20);
             }
         }
     }
@@ -447,6 +452,8 @@ class Monster {
         this.aggressiveness = 0;
         this.phase = 'calm'; // calm, alert, enraged
         this.roarTime = 0;
+        this.isAttacking = false;
+        this.lastAttackTime = 0;
     }
 
     update(deltaTime, player) {
@@ -473,30 +480,42 @@ class Monster {
         if (this.phase === 'calm') {
             // 移動なし
             this.roarTime = 0;
+            this.isAttacking = false;
         } else if (this.phase === 'alert') {
             // プレイヤーに向かって移動、時々攻撃
             this.moveTowards(player, deltaTime, 0.15);
             this.aggressiveness = 0.5;
 
-            if (distance < 15 && this.attackCooldown <= 0) {
-                this.roar();
-                this.attackCooldown = 2;
+            if (distance < 8 && this.attackCooldown <= 0) {
+                this.performAttack();
+                this.attackCooldown = 2.5;
             }
         } else if (this.phase === 'enraged') {
             // 高速移動、連続攻撃
             this.moveTowards(player, deltaTime, 0.3);
             this.aggressiveness = 1;
 
-            if (distance < 20 && this.attackCooldown <= 0) {
-                this.roar();
-                this.attackCooldown = 1.2;
+            if (distance < 10 && this.attackCooldown <= 0) {
+                this.performAttack();
+                this.attackCooldown = 1.5;
             }
         }
 
-        // ダメージ判定
-        if (distance < 4 && this.attackCooldown > this.attackCooldown - deltaTime) {
-            const damage = Math.floor(10 + this.aggressiveness * 15);
-            player.takeDamage(damage);
+        // 攻撃アニメーション中のダメージ判定
+        if (this.isAttacking) {
+            this.lastAttackTime += deltaTime;
+            
+            // 攻撃モーション中（0.3秒～0.6秒の間）にプレイヤーが近ければダメージ
+            if (this.lastAttackTime > 0.3 && this.lastAttackTime < 0.6 && distance < 5) {
+                const damage = Math.floor(15 + this.aggressiveness * 15);
+                player.takeDamage(damage);
+                this.isAttacking = false; // 一度だけダメージを与える
+            }
+            
+            // 攻撃アニメーション終了
+            if (this.lastAttackTime > 1.0) {
+                this.isAttacking = false;
+            }
         }
 
         // グループ位置更新
@@ -522,6 +541,12 @@ class Monster {
         // マップ境界
         this.position.x = Math.max(-240, Math.min(240, this.position.x));
         this.position.z = Math.max(-240, Math.min(240, this.position.z));
+    }
+
+    performAttack() {
+        this.isAttacking = true;
+        this.lastAttackTime = 0;
+        this.roar();
     }
 
     roar() {

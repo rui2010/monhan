@@ -2,6 +2,9 @@
 // モンスターハンター 3Dゲーム - メインスクリプト
 // ========================================
 
+console.log('Game script loaded');
+console.log('THREE.js version:', THREE.REVISION);
+
 // Three.js シーン設定
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xa0d8f1);
@@ -15,6 +18,8 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.get
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+console.log('Scene, camera, renderer created');
 
 // ========================================
 // ライティング
@@ -650,7 +655,13 @@ class GameManager {
 // ========================================
 // メインゲームループ
 // ========================================
+console.log('Creating game manager...');
 const gameManager = new GameManager();
+console.log('Game manager created');
+console.log('Player position:', gameManager.player.position);
+console.log('Monster position:', gameManager.monster.position);
+console.log('Scene children count:', scene.children.length);
+
 let lastTime = Date.now();
 
 function animate() {
@@ -664,6 +675,9 @@ function animate() {
     renderer.render(scene, camera);
 }
 
+console.log('Starting animation loop...');
+animate();
+
 // リサイズ対応
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -671,4 +685,4 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-animate();
+console.log('Game initialized successfully!');

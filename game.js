@@ -320,15 +320,15 @@ class Player {
         });
 
         // カメラ位置更新
-        const cameraDistance = 3;
-        const cameraHeight = 1.2;
+        const cameraDistance = 8;
+        const cameraHeight = 5;
         camera.position.x = this.position.x + Math.cos(this.rotation + Math.PI) * cameraDistance;
-        camera.position.y = this.position.y + cameraHeight;
+        camera.position.y = cameraHeight;
         camera.position.z = this.position.z + Math.sin(this.rotation + Math.PI) * cameraDistance;
         camera.lookAt(
-            this.position.x + Math.cos(this.rotation) * 5,
-            this.position.y + 0.5,
-            this.position.z + Math.sin(this.rotation) * 5
+            this.position.x,
+            1,
+            this.position.z
         );
 
         // 敵へのダメージチェック

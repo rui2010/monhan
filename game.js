@@ -4,8 +4,8 @@
 
 // Three.js シーン設定
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 500, 1000);
+scene.background = new THREE.Color(0xa0d8f1);
+scene.fog = new THREE.Fog(0xa0d8f1, 300, 800);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('canvas') });
@@ -35,15 +35,74 @@ scene.add(directionalLight);
 // 地形（グラウンド）
 // ========================================
 const groundGeometry = new THREE.PlaneGeometry(500, 500);
-const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x8b7355 });
+const groundMaterial = new THREE.MeshLambertMaterial({ color: 0x4a8a3f });
 const ground = new THREE.Mesh(groundGeometry, groundMaterial);
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
 
 // テクスチャ感を出すため、グリッドラインを描画
-const gridHelper = new THREE.GridHelper(500, 50, 0x444444, 0x222222);
+const gridHelper = new THREE.GridHelper(500, 50, 0x2a5a2f, 0x1a3a1f);
 scene.add(gridHelper);
+
+// ========================================
+// ランドマーク（木、岩など）
+// ========================================
+function createTree(x, z) {
+    const group = new THREE.Group();
+    
+    // 幹
+    const trunkGeometry = new THREE.CylinderGeometry(0.5, 0.7, 5, 8);
+    const trunkMaterial = new THREE.MeshLambertMaterial({ color: 0x5c4033 });
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.position.y = 2.5;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+    group.add(trunk);
+    
+    // 葉
+    const leavesGeometry = new THREE.SphereGeometry(2.5, 8, 8);
+    const leavesMaterial = new THREE.MeshLambertMaterial({ color: 0x2d5016 });
+    const leaves = new THREE.Mesh(leavesGeometry, leavesMaterial);
+    leaves.position.y = 6;
+    leaves.castShadow = true;
+    leaves.receiveShadow = true;
+    group.add(leaves);
+    
+    group.position.set(x, 0, z);
+    scene.add(group);
+}
+
+function createRock(x, z, size = 1) {
+    const rockGeometry = new THREE.DodecahedronGeometry(size, 0);
+    const rockMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
+    const rock = new THREE.Mesh(rockGeometry, rockMaterial);
+    rock.position.set(x, size * 0.5, z);
+    rock.rotation.set(Math.random(), Math.random(), Math.random());
+    rock.castShadow = true;
+    rock.receiveShadow = true;
+    scene.add(rock);
+}
+
+// 木を配置
+for (let i = 0; i < 20; i++) {
+    const x = (Math.random() - 0.5) * 400;
+    const z = (Math.random() - 0.5) * 400;
+    const dist = Math.sqrt(x * x + z * z);
+    if (dist > 30) { // プレイヤーの周りには配置しない
+        createTree(x, z);
+    }
+}
+
+// 岩を配置
+for (let i = 0; i < 30; i++) {
+    const x = (Math.random() - 0.5) * 400;
+    const z = (Math.random() - 0.5) * 400;
+    const dist = Math.sqrt(x * x + z * z);
+    if (dist > 20) {
+        createRock(x, z, 0.8 + Math.random() * 1.2);
+    }
+}
 
 // ========================================
 // プレイヤークラス
@@ -55,7 +114,7 @@ class Player {
         
         // プレイヤーの体（キューブ）
         const bodyGeometry = new THREE.BoxGeometry(0.8, 1.8, 0.6);
-        const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x4444aa });
+        const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x3388ff });
         this.body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         this.body.position.y = 0.9;
         this.body.castShadow = true;
@@ -226,7 +285,7 @@ class Player {
         // ダメージフラッシュ
         if (this.damageFlash > 0) {
             this.damageFlash -= deltaTime;
-            this.body.material.color.setHex(this.damageFlash > 0 ? 0xff4444 : 0x4444aa);
+            this.body.material.color.setHex(this.damageFlash > 0 ? 0xff4444 : 0x3388ff);
         }
 
         // グループ位置更新

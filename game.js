@@ -11,7 +11,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: document.getElementById('canvas') });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 // ========================================
 // ライティング

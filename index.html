@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モンスターハンター 3Dゲーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            min-width: 300px;
+            z-index: 10;
+        }
+
+        .stat-bar {
+            margin: 10px 0;
+            background: #333;
+            border: 1px solid #666;
+            border-radius: 3px;
+            overflow: hidden;
+            height: 20px;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8844);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .stat-label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #d4af37;
+        }
+
+        #monsterInfo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border: 2px solid #cc0000;
+            border-radius: 5px;
+            min-width: 280px;
+            z-index: 10;
+        }
+
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .control-item {
+            margin: 5px 0;
+        }
+
+        #status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border: 2px solid #d4af37;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 10;
+            min-width: 200px;
+        }
+
+        .warning {
+            color: #ff4444;
+            font-weight: bold;
+        }
+
+        .safe {
+            color: #44ff44;
+        }
+
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 40px;
+            border: 3px solid #cc0000;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 100;
+            min-width: 400px;
+        }
+
+        #gameOver h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #cc0000;
+        }
+
+        #gameOver p {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        #gameOver button {
+            margin-top: 20px;
+            padding: 10px 30px;
+            font-size: 18px;
+            background: #d4af37;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #gameOver button:hover {
+            background: #ffdd77;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="canvas"></canvas>
+        
+        <div id="ui">
+            <div class="stat-label">プレイヤーHP</div>
+            <div class="stat-bar">
+                <div id="playerHpBar" class="stat-fill" style="width: 100%;"></div>
+            </div>
+            <div style="font-size: 12px; margin-top: 3px;" id="hpText">HP: 100/100</div>
+
+            <div class="stat-label" style="margin-top: 15px;">スタミナ</div>
+            <div class="stat-bar">
+                <div id="staminaBar" class="stat-fill" style="width: 100%; background: linear-gradient(90deg, #4488ff, #88ccff);"></div>
+            </div>
+            <div style="font-size: 12px; margin-top: 3px;" id="staminaText">スタミナ: 100/100</div>
+
+            <div class="stat-label" style="margin-top: 15px;">武器耐久度</div>
+            <div class="stat-bar">
+                <div id="durabilityBar" class="stat-fill" style="width: 100%; background: linear-gradient(90deg, #ffff44, #ffaa44);"></div>
+            </div>
+            <div style="font-size: 12px; margin-top: 3px;" id="durabilityText">耐久度: 100/100</div>
+        </div>
+
+        <div id="monsterInfo" style="display: none;">
+            <div class="stat-label">モンスターHP</div>
+            <div class="stat-bar">
+                <div id="monsterHpBar" class="stat-fill" style="width: 100%;"></div>
+            </div>
+            <div style="font-size: 12px; margin-top: 3px;" id="monsterHpText">HP: 200/200</div>
+
+            <div style="margin-top: 15px; font-size: 14px;">
+                <div id="monsterNameDisplay" style="color: #cc0000; font-weight: bold;">モンスター</div>
+                <div style="font-size: 12px; margin-top: 5px;">
+                    <span id="monsterDistance">距離: --m</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <div class="control-item">⬆️ W: 前進</div>
+            <div class="control-item">⬅️ A: 左移動</div>
+            <div class="control-item">➡️ D: 右移動</div>
+            <div class="control-item">⬇️ S: 後退</div>
+            <div class="control-item">🖱️ マウス: カメラ操作</div>
+            <div class="control-item" style="margin-top: 15px;">
+                <span style="color: #ffaa44;">左クリック: 攻撃</span>
+            </div>
+            <div class="control-item">スペース: 回避</div>
+            <div class="control-item">R: 武器修理</div>
+        </div>
+
+        <div id="status">
+            <div id="statusText">準備中...</div>
+        </div>
+
+        <div id="gameOver">
+            <h1 id="gameOverTitle">ゲームオーバー</h1>
+            <p id="gameOverMessage">メッセージ</p>
+            <p id="gameOverStats">統計情報</p>
+            <button onclick="location.reload()">リスタート</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
